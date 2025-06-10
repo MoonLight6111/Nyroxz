@@ -30,9 +30,9 @@ module.exports = {
     const botLatency = Date.now() - now;
     const avgResponseTime = Math.round((clientLatency + apiLatency + botLatency) / 3);
 
-    // 🔹 BLOCK 4 – Fire-Grade Embed Construction
+    // 🔹 BLOCK 4 – Embed Construction (Green Theme)
     const embed = new EmbedBuilder()
-      .setColor(Green) // 🔥 Vibrant red-pink
+      .setColor(0x00FF00) // ✅ Green Theme
       .setTitle('🚀 System Diagnostics: Latency Test')
       .setThumbnail(input.client.user.displayAvatarURL({ dynamic: true }))
       .addFields(
