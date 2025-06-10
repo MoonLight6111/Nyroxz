@@ -25,9 +25,9 @@ module.exports = {
 
     // Slash vs Prefix handling (safe & correct)
     if (input.isChatInputCommand?.()) {
-      sent = await input.reply({ content: '🔄 Fetching info...', fetchReply: true });
+      sent = await input.reply({ content: '🟢 Fetching uptime info...', fetchReply: true });
     } else {
-      sent = await input.channel.send('🔄 Fetching info...');
+      sent = await input.channel.send('🟢 Fetching uptime info...');
     }
 
     // 🔹 BLOCK 3 – Send Embed After Placeholder
