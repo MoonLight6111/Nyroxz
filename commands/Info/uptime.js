@@ -7,8 +7,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
-
-  // 🔹 BLOCK 2 – Unified Execution Handler (w/ RAM, CPU, Version, Custom Hostname)
+  // 🔹 BLOCK 2 – Unified Execution Handler (Safe CPU, No Hanging)
   async execute(input, args) {
     const totalSeconds = Math.floor(process.uptime());
     const days = Math.floor(totalSeconds / 86400);
@@ -21,10 +20,16 @@ module.exports = {
     const memory = process.memoryUsage().heapUsed / 1024 / 1024;
     const ramUsage = `${memory.toFixed(2)} MB`;
 
-    // ⚙️ CPU Info
-    const cpus = os.cpus();
-    const cpuModel = cpus[0].model;
-    const cpuSpeed = cpus[0].speed + ' MHz';
+    // ⚙️ CPU Info (Safe Mode)
+    let cpuModel = 'Unavailable';
+    let cpuSpeed = 'Unavailable';
+    try {
+      const cpus = os.cpus();
+      cpuModel = cpus[0].model;
+      cpuSpeed = cpus[0].speed + ' MHz';
+    } catch (err) {
+      console.error('❌ CPU info error:', err.message);
+    }
 
     // 🤖 Bot Version Info
     const discordJsVersion = require('discord.js').version;
@@ -39,6 +44,7 @@ module.exports = {
     } else {
       sent = await input.channel.send('🟢 Fetching uptime info...');
     }
+
 
     // 🔹 BLOCK 3 – Embed Construction (Green Fire + System Specs + Custom Hostname)
     const embed = new EmbedBuilder()
