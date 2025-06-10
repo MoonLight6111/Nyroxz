@@ -7,7 +7,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
-  // 🔹 BLOCK 2 – Unified Execution Handler (Safe CPU, No Hanging)
+
+      // 🔹 BLOCK 2 – Lightweight Execution Handler (No RAM/CPU, Fast Response)
   async execute(input, args) {
     const totalSeconds = Math.floor(process.uptime());
     const days = Math.floor(totalSeconds / 86400);
@@ -15,21 +16,6 @@ module.exports = {
     const minutes = Math.floor(totalSeconds / 60) % 60;
     const seconds = totalSeconds % 60;
     const uptimeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-    // 🧠 RAM Usage
-    const memory = process.memoryUsage().heapUsed / 1024 / 1024;
-    const ramUsage = `${memory.toFixed(2)} MB`;
-
-    // ⚙️ CPU Info (Safe Mode)
-    let cpuModel = 'Unavailable';
-    let cpuSpeed = 'Unavailable';
-    try {
-      const cpus = os.cpus();
-      cpuModel = cpus[0].model;
-      cpuSpeed = cpus[0].speed + ' MHz';
-    } catch (err) {
-      console.error('❌ CPU info error:', err.message);
-    }
 
     // 🤖 Bot Version Info
     const discordJsVersion = require('discord.js').version;
@@ -45,26 +31,42 @@ module.exports = {
       sent = await input.channel.send('🟢 Fetching uptime info...');
     }
 
-
-    // 🔹 BLOCK 3 – Embed Construction (Green Fire + System Specs + Custom Hostname)
+    // 🔹 BLOCK 3 – Fire Version Embed (Green Theme, Fast & Stylish)
     const embed = new EmbedBuilder()
       .setColor(0x00FF00)
-      .setTitle('🟢 Bot Uptime Status')
+      .setTitle('🟢 Bot Uptime Report')
       .setThumbnail(input.client.user.displayAvatarURL({ dynamic: true }))
-      .setDescription('> 🧭 **System performance stats**\n> Tracking uptime, memory, and environment.')
+      .setDescription('> **System online and running smooth!**\n> All systems operational ⚡')
       .addFields(
-        { name: '⏳ Uptime', value: `\`${uptimeString}\``, inline: true },
-        { name: '📅 Started On', value: `<t:${Math.floor(Date.now() / 1000 - process.uptime())}:F>`, inline: true },
-        { name: '🧠 RAM Usage', value: `\`${ramUsage}\``, inline: true },
-        { name: '🖥 CPU Model', value: `\`${cpuModel}\``, inline: false },
-        { name: '⚡ CPU Speed', value: `\`${cpuSpeed}\``, inline: true },
-        { name: '🔧 Node.js Version', value: `\`${nodeVersion}\``, inline: true },
-        { name: '📦 Discord.js Version', value: `\`v${discordJsVersion}\``, inline: true },
-        { name: '🏷 Hostname', value: `\`${hostname}\``, inline: true }
+        {
+          name: '⏳ Uptime',
+          value: `🟢 \`${uptimeString}\``,
+          inline: true
+        },
+        {
+          name: '📅 Online Since',
+          value: `🕒 <t:${Math.floor(Date.now() / 1000 - process.uptime())}:F>`,
+          inline: true
+        },
+        {
+          name: '🏷 Hostname',
+          value: `🌐 \`${hostname}\``,
+          inline: true
+        },
+        {
+          name: '⚙️ Node.js',
+          value: `\`${nodeVersion}\``,
+          inline: true
+        },
+        {
+          name: '📦 Discord.js',
+          value: `\`v${discordJsVersion}\``,
+          inline: true
+        }
       )
       .setFooter({
-        text: `Requested by ${input.user?.tag || input.author.tag}`,
-        iconURL: input.user?.displayAvatarURL?.() || input.author.displayAvatarURL(),
+        text: `Status requested by ${input.user?.tag || input.author.tag}`,
+        iconURL: input.user?.displayAvatarURL?.() || input.author.displayAvatarURL()
       })
       .setTimestamp();
 
