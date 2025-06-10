@@ -8,7 +8,8 @@ module.exports = {
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
 
-      // 🔹 BLOCK 2 – Lightweight Execution Handler (No RAM/CPU, Fast Response)
+ 
+      // 🔹 BLOCK 2 – Bulletproof Execution (No Lag, No CPU, Safe Reply Handling)
   async execute(input, args) {
     const totalSeconds = Math.floor(process.uptime());
     const days = Math.floor(totalSeconds / 86400);
@@ -17,19 +18,14 @@ module.exports = {
     const seconds = totalSeconds % 60;
     const uptimeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
-    // 🤖 Bot Version Info
     const discordJsVersion = require('discord.js').version;
     const nodeVersion = process.version;
-
-    // 🏷 Custom Hostname
     const hostname = 'MoonL8';
 
-    let sent;
-    if (input.isChatInputCommand?.()) {
-      sent = await input.deferReply({ fetchReply: true });
-    } else {
-      sent = await input.channel.send('🟢 Fetching uptime info...');
-    }
+    // 🔐 Check if it's a slash or prefix command and respond accordingly
+    let isSlash = input?.deferReply !== undefined;
+    let sendFn = isSlash ? input.reply.bind(input) : input.channel.send.bind(input.channel);
+
 
     // 🔹 BLOCK 3 – Fire Version Embed (Green Theme, Fast & Stylish)
     const embed = new EmbedBuilder()
