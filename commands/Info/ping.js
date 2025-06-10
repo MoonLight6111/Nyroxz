@@ -4,24 +4,24 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ping')
-    .setDescription('Displays bot and API latency details in a fancy embed'),
+    .setDescription('🔥 Check full latency diagnostics of the bot'),
 
-  // 🔹 BLOCK 2 – Unified Execution Handler
+  // 🔹 BLOCK 2 – Unified Execution Handler (Slash & Prefix)
   async execute(input, args) {
     const now = Date.now();
     let sent;
 
-    // Slash command execution
+    // Handle Slash Command
     if (input.isChatInputCommand?.()) {
-      sent = await input.reply({ content: '🏓 Calculating latency...', fetchReply: true });
+      sent = await input.reply({ content: '⚡ Measuring power levels...', fetchReply: true });
     }
 
-    // Prefix command execution
+    // Handle Prefix Command
     else if (input.content) {
-      sent = await input.channel.send('🏓 Calculating latency...');
+      sent = await input.channel.send('⚡ Measuring power levels...');
     }
 
-    // 🔹 BLOCK 3 – Latency Calculations
+    // 🔹 BLOCK 3 – Latency Metrics Calculation
     const replyTimestamp = sent.createdTimestamp || Date.now();
     const requestTimestamp = input.createdTimestamp || now;
 
@@ -30,20 +30,41 @@ module.exports = {
     const botLatency = Date.now() - now;
     const avgResponseTime = Math.round((clientLatency + apiLatency + botLatency) / 3);
 
-    // 🔹 BLOCK 4 – Embed Construction
+    // 🔹 BLOCK 4 – Fire-Grade Embed Construction
     const embed = new EmbedBuilder()
-      .setColor(0x00FF9D)
-      .setTitle('🏓 Bot Latency Report')
+      .setColor(Green) // 🔥 Vibrant red-pink
+      .setTitle('🚀 System Diagnostics: Latency Test')
+      .setThumbnail(input.client.user.displayAvatarURL({ dynamic: true }))
       .addFields(
-        { name: 'Client Latency', value: `\`${clientLatency}ms\``, inline: true },
-        { name: 'Bot Latency', value: `\`${botLatency}ms\``, inline: true },
-        { name: 'API Latency', value: `\`${apiLatency}ms\``, inline: true },
-        { name: 'Avg Response Time', value: `\`${avgResponseTime}ms\``, inline: false },
+        {
+          name: '🧠 Client Latency',
+          value: `\`${clientLatency}ms\``,
+          inline: true,
+        },
+        {
+          name: '🛠 Bot Latency',
+          value: `\`${botLatency}ms\``,
+          inline: true,
+        },
+        {
+          name: '🌐 API Latency',
+          value: `\`${apiLatency}ms\``,
+          inline: true,
+        },
+        {
+          name: '📊 Average Response',
+          value: `\`${avgResponseTime}ms\``,
+          inline: false,
+        },
       )
-      .setFooter({ text: `Requested by ${input.user?.tag || input.author.tag}` })
+      .setDescription('> ⚙️ **Latency breakdown to help you monitor performance.**')
+      .setFooter({
+        text: `Requested by ${input.user?.tag || input.author.tag}`,
+        iconURL: input.user?.displayAvatarURL?.() || input.author.displayAvatarURL(),
+      })
       .setTimestamp();
 
-    // 🔹 BLOCK 5 – Send Final Embed Response
+    // 🔹 BLOCK 5 – Final Reply with the Embed
     if (input.isChatInputCommand?.()) {
       await input.editReply({ content: null, embeds: [embed] });
     } else {
