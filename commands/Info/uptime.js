@@ -27,44 +27,27 @@ module.exports = {
     let sendFn = isSlash ? input.reply.bind(input) : input.channel.send.bind(input.channel);
 
 
-    // 🔹 BLOCK 3 – Fire Version Embed (Green Theme, Fast & Stylish)
+        // 🔹 BLOCK 3 – Fire Embed (No Lag, Styled)
     const embed = new EmbedBuilder()
       .setColor(0x00FF00)
       .setTitle('🟢 Bot Uptime Report')
       .setThumbnail(input.client.user.displayAvatarURL({ dynamic: true }))
       .setDescription('> **System online and running smooth!**\n> All systems operational ⚡')
       .addFields(
-        {
-          name: '⏳ Uptime',
-          value: `🟢 \`${uptimeString}\``,
-          inline: true
-        },
-        {
-          name: '📅 Online Since',
-          value: `🕒 <t:${Math.floor(Date.now() / 1000 - process.uptime())}:F>`,
-          inline: true
-        },
-        {
-          name: '🏷 Hostname',
-          value: `🌐 \`${hostname}\``,
-          inline: true
-        },
-        {
-          name: '⚙️ Node.js',
-          value: `\`${nodeVersion}\``,
-          inline: true
-        },
-        {
-          name: '📦 Discord.js',
-          value: `\`v${discordJsVersion}\``,
-          inline: true
-        }
+        { name: '⏳ Uptime', value: `🟢 \`${uptimeString}\``, inline: true },
+        { name: '📅 Online Since', value: `🕒 <t:${Math.floor(Date.now() / 1000 - process.uptime())}:F>`, inline: true },
+        { name: '🏷 Hostname', value: `🌐 \`${hostname}\``, inline: true },
+        { name: '⚙️ Node.js', value: `\`${nodeVersion}\``, inline: true },
+        { name: '📦 Discord.js', value: `\`v${discordJsVersion}\``, inline: true }
       )
       .setFooter({
         text: `Status requested by ${input.user?.tag || input.author.tag}`,
         iconURL: input.user?.displayAvatarURL?.() || input.author.displayAvatarURL()
       })
       .setTimestamp();
+
+    // ✅ Reply without lag or hang
+    await sendFn({ embeds: [embed] });
 
   },
 };
