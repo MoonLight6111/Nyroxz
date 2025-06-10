@@ -8,8 +8,7 @@ module.exports = {
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
 
- 
-      // 🔹 BLOCK 2 – Bulletproof Execution (No Lag, No CPU, Safe Reply Handling)
+   // 🔹 BLOCK 2 – With Placeholder Message (Works Smoothly)
   async execute(input, args) {
     const totalSeconds = Math.floor(process.uptime());
     const days = Math.floor(totalSeconds / 86400);
@@ -22,12 +21,16 @@ module.exports = {
     const nodeVersion = process.version;
     const hostname = 'MoonL8';
 
-    // 🔐 Check if it's a slash or prefix command and respond accordingly
-    let isSlash = input?.deferReply !== undefined;
-    let sendFn = isSlash ? input.reply.bind(input) : input.channel.send.bind(input.channel);
+    let sent;
 
+    // Slash vs Prefix handling (safe & correct)
+    if (input.isChatInputCommand?.()) {
+      sent = await input.reply({ content: '🔄 Fetching info...', fetchReply: true });
+    } else {
+      sent = await input.channel.send('🔄 Fetching info...');
+    }
 
-        // 🔹 BLOCK 3 – Fire Embed (No Lag, Styled)
+    // 🔹 BLOCK 3 – Send Embed After Placeholder
     const embed = new EmbedBuilder()
       .setColor(0x00FF00)
       .setTitle('🟢 Bot Uptime Report')
@@ -46,8 +49,8 @@ module.exports = {
       })
       .setTimestamp();
 
-    // ✅ Reply without lag or hang
-    await sendFn({ embeds: [embed] });
+    // ✅ Replace the "Fetching..." message with embed
+    await sent.edit({ content: null, embeds: [embed] });
 
   },
 };
