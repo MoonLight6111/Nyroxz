@@ -8,7 +8,7 @@ module.exports = {
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
 
-   // 🔹 BLOCK 2 – With Placeholder Message (Works Smoothly)
+     // 🔹 BLOCK 2 – Slash/Prefix Friendly & No fetchReply Warning
   async execute(input, args) {
     const totalSeconds = Math.floor(process.uptime());
     const days = Math.floor(totalSeconds / 86400);
@@ -23,12 +23,13 @@ module.exports = {
 
     let sent;
 
-    // Slash vs Prefix handling (safe & correct)
     if (input.isChatInputCommand?.()) {
-      sent = await input.reply({ content: '🟢 Fetching uptime info...', fetchReply: true });
+      await input.reply({ content: '🟢 Fetching uptime info...' });
+      sent = await input.fetchReply(); // ✅ Proper way now
     } else {
       sent = await input.channel.send('🟢 Fetching uptime info...');
     }
+
 
     // 🔹 BLOCK 3 – Send Embed After Placeholder
     const embed = new EmbedBuilder()
