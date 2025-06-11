@@ -18,13 +18,22 @@ const client = new Client({
 });
 
 // 🔹 Block 2 – Bot Login & Ready Event
-
+// 🔹 Unified Bot Ready Event + Presence Setup
 // Log in the bot using the token from the .env file
 client.login(process.env.DISCORD_TOKEN);
 
-// Once the bot is ready and connected, this event triggers
 client.once('ready', () => {
   console.log(`✅ Bot is online as ${client.user.tag}`);
+
+  client.user.setPresence({
+    status: 'dnd', // online | idle | dnd | invisible
+    activities: [
+      {
+        name: 'Nyrøxz Official',
+        type: 2, // 0 = Playing, 1 = Streaming, 2 = Listening, 3 = Watching, 5 = Competing
+      },
+    ],
+  });
 });
 
 
@@ -72,15 +81,15 @@ const { REST, Routes } = require('discord.js');
 
 const commandsArray = [];
 
-// Convert each loaded command's data to JSON for registration
+// ✅ Only include commands with a valid .data.toJSON() method (i.e., slash commands)
 client.commands.forEach(command => {
-  commandsArray.push(command.data.toJSON());
+  if (command.data && typeof command.data.toJSON === 'function') {
+    commandsArray.push(command.data.toJSON());
+  }
 });
 
-// Create a REST instance for interacting with the Discord API
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
-// Register commands with the Discord server
 (async () => {
   try {
     console.log('🔄 Registering slash commands...');
@@ -95,6 +104,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     console.error('❌ Failed to register commands:', error);
   }
 })();
+
 
 // 🔹 Block 5 – Handle Slash Command Interactions
 
@@ -146,18 +156,3 @@ client.on('messageCreate', async message => {
   }
 });
 
-// 🔹 Block 7 – Bot Ready Event + Custom Status
-
-client.once('ready', () => {
-  console.log(`✅ Bot is online as ${client.user.tag}`);
-
-  client.user.setPresence({
-    status: 'dnd', // online | idle | dnd | invisible
-    activities: [
-      {
-        name: 'Nyrøxz Official',
-        type: 2, // 0 = Playing, 1 = Streaming, 2 = Listening, 3 = Watching, 5 = Competing
-      },
-    ],
-  });
-});

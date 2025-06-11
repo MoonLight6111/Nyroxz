@@ -2,6 +2,9 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
+  name: 'ping',
+  description: '🔥 Check full latency diagnostics of the bot',
+
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('🔥 Check full latency diagnostics of the bot'),
@@ -55,12 +58,12 @@ module.exports = {
           name: '📊 Average Response',
           value: `\`${avgResponseTime}ms\``,
           inline: false,
-        },
+        }
       )
       .setDescription('> ⚙️ **Latency breakdown to help you monitor performance.**')
       .setFooter({
-        text: `Requested by ${input.user?.tag || input.author.tag}`,
-        iconURL: input.user?.displayAvatarURL?.() || input.author.displayAvatarURL(),
+        text: `Requested by ${input.user?.tag || input.author?.tag || 'Unknown User'}`,
+        iconURL: input.user?.displayAvatarURL?.() || input.author?.displayAvatarURL?.() || null,
       })
       .setTimestamp();
 
@@ -70,5 +73,5 @@ module.exports = {
     } else {
       await sent.edit({ content: null, embeds: [embed] });
     }
-  },
+  }
 };

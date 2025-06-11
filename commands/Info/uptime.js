@@ -4,6 +4,9 @@ const os = require('os'); // optional, if you want later: CPU, RAM stats
 
 
 module.exports = {
+    name: 'uptime',
+  description: '📈 Shows how long the bot has been online without restart',
+
   data: new SlashCommandBuilder()
     .setName('uptime')
     .setDescription('📈 Shows how long the bot has been online without restart'),
