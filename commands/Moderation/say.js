@@ -65,7 +65,11 @@ module.exports.execute = async (input, args) => {
     
 
   if (isSlash) {
-    await input.reply({ content: '✅ Message sent!', ephemeral: true });
+    await input.reply({
+  content: '✅ Message sent!',
+  flags: 1 << 6 // Equivalent to MessageFlags.Ephemeral
+});
+
     await input.channel.send({ embeds: [embed] });
   } else {
     await input.channel.send({ embeds: [embed] });
