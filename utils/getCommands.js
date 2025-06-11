@@ -19,6 +19,7 @@ function getAllCommands(dirPath = path.join(__dirname, '..', 'commands')) {
       try {
         const command = require(filePath);
 
+
         const description =
           command.description ||
           command.data?.description ||
