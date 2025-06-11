@@ -14,10 +14,12 @@ module.exports = {
     const now = Date.now();
     let sent;
 
-    // Handle Slash Command
-    if (input.isChatInputCommand?.()) {
-      sent = await input.reply({ content: '⚡ Measuring power levels...', fetchReply: true });
-    }
+   // Handle Slash Command
+if (input.isChatInputCommand?.()) {
+  await input.reply({ content: '⚡ Measuring power levels...' });
+  sent = await input.fetchReply();
+}
+
 
     // Handle Prefix Command
     else if (input.content) {
