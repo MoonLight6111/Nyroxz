@@ -58,20 +58,24 @@ module.exports.execute = async (input, args) => {
   // Proceed to embed construction
 
 
-  // 🔹 BLOCK 3 – Embed Construction and Final Send
-  const embed = new EmbedBuilder()
-    .setColor(0x00FF00)
-    .setDescription(messageContent)
-    
+ // 🔹 BLOCK 3 – Embed Construction and Final Send
+const embed = new EmbedBuilder()
+  .setColor(0x00FF00) // ✅ Green theme
+  .setDescription(messageContent);
 
-  if (isSlash) {
-    await input.reply({
-  content: '✅ Message sent!',
-  flags: 1 << 6 // Equivalent to MessageFlags.Ephemeral
-});
+if (isSlash) {
+  // Slash command: ephemeral confirmation + embed
+  await input.reply({
+    content: '✅ Message sent!',
+    flags: 1 << 6, // Equivalent to MessageFlags.Ephemeral
+  });
 
-    await input.channel.send({ embeds: [embed] });
-  } else {
-    await input.channel.send({ embeds: [embed] });
+  await input.channel.send({ embeds: [embed] });
+} else {
+  // Prefix command: delete user's message if possible
+  if (input.deletable) {
+    await input.delete().catch(() => {}); // Gracefully handle errors
   }
-};
+
+  await input.channel.send({ embeds: [embed] });
+}};
