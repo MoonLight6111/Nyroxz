@@ -1,26 +1,27 @@
-// 🔹 BLOCK 1 – Command Metadata & Permission Config
+//BLOCK 1 – Command Metadata & Permission Config
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('nuke')
-    .setDescription('🧹 Delete every message in this channel (without recreating the channel)')
+    .setDescription('🧹 Delete every message in this channel (without recreating it)')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels), // Admin/Mod Only
   name: 'nuke',
   description: '🧹 Delete every message in this channel (Admin/Mod only)',
 };
 
-// 🔹 BLOCK 2 – Unified Execution Handler & Permission Check
+
+//BLOCK 2 – Unified Execution Handler & Permission Check
 const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports.execute = async (input, args) => {
   const isSlash = !!input.isChatInputCommand?.();
   const member = input.member;
 
-  // 🔐 Permission Validation
+  // 🔐 Permission check
   if (!member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
     const denyEmbed = new EmbedBuilder()
-      .setColor(0xFF0000) // Red for error
+      .setColor(0xFF0000)
       .setTitle('🚫 Access Denied')
       .setDescription('You do not have permission to use this command.')
       .setTimestamp();
@@ -30,11 +31,9 @@ module.exports.execute = async (input, args) => {
       : input.reply({ embeds: [denyEmbed] });
   }
 
-  // ✅ Proceed to message deletion next
-
-    // Only apply confirmation for prefix usage to avoid complexity with slash commands
+  // 🟡 Confirm only for prefix
   if (!isSlash) {
-    const confirmMessage = await input.reply({
+    await input.reply({
       content: '⚠️ Are you sure you want to delete **all messages** in this channel?\nReply with `yes` within 15 seconds to confirm.',
     });
 
@@ -43,71 +42,93 @@ module.exports.execute = async (input, args) => {
         m.author.id === input.author.id &&
         m.content.toLowerCase() === 'yes';
 
-      const collected = await input.channel.awaitMessages({
+      await input.channel.awaitMessages({
         filter,
         max: 1,
         time: 15000,
         errors: ['time'],
       });
-
-      if (!collected.size) {
-        await input.reply('❌ Confirmation not received. Operation cancelled.');
-        return;
-      }
-    } catch (err) {
-      await input.reply('❌ Time expired. Operation cancelled.');
+    } catch {
+      await input.channel.send('❌ Time expired. Operation cancelled.');
       return;
     }
   }
 
- // 🔹 BLOCK 3 – Safe Deletion with Progress and Self-Cleanup
-const channel = input.channel;
-let totalDeleted = 0;
-let lastMessageId = null;
 
-// Send initial progress message
-const progressMessage = await channel.send('🧹 Deleting messages... Please wait.');
+  // BLOCK 3 – Count Total Messages First
+  const channel = input.channel;
+  let totalMessages = 0;
+  let lastId = null;
 
-while (true) {
-  const messages = await channel.messages
-    .fetch({ limit: 100, before: lastMessageId })
-    .catch(() => null);
+  while (true) {
+    const batch = await channel.messages.fetch({ limit: 100, before: lastId }).catch(() => null);
+    if (!batch || batch.size === 0) break;
+    totalMessages += batch.size;
+    lastId = batch.last().id;
+    await new Promise(res => setTimeout(res, 200)); // Light rate limit delay
+  }
 
-  if (!messages || messages.size === 0) break;
+  if (totalMessages === 0) {
+    return channel.send('✅ No messages to delete.');
+  }
 
-  for (const msg of messages.values()) {
-    try {
-      await msg.delete();
-      totalDeleted++;
-      lastMessageId = msg.id;
-    } catch (_) {
-      // Ignore undeletable messages silently
+
+  //BLOCK 4 – Send & Protect Progress Bar
+    const PROGRESS_BAR_SIZE = 20;
+
+  function getProgressBar(current, total) {
+    const filled = Math.round((current / total) * PROGRESS_BAR_SIZE);
+    return '🟩'.repeat(filled) + '⬛'.repeat(PROGRESS_BAR_SIZE - filled);
+  }
+
+  const progressEmbed = new EmbedBuilder()
+    .setColor(0x00FF00)
+    .setTitle('🧹 Nuking in progress...')
+    .setDescription(`${getProgressBar(0, totalMessages)}\n\`0 / ${totalMessages}\` messages deleted`)
+    .setTimestamp();
+
+  const progressMessage = await channel.send({ embeds: [progressEmbed] });
+  const progressMessageId = progressMessage.id; // ⛔ Don't delete this message during loop
+
+
+  // BLOCK 5 – Deletion Loop with Live Progress
+    let deleted = 0;
+  let beforeId = null;
+
+  while (deleted < totalMessages) {
+    const batch = await channel.messages.fetch({ limit: 100, before: beforeId }).catch(() => null);
+    if (!batch || batch.size === 0) break;
+
+    for (const msg of batch.values()) {
+      if (msg.id === progressMessageId) continue; // ⛔ Skip deleting progress message
+
+      await msg.delete().catch(() => {});
+      deleted++;
+      beforeId = msg.id;
+
+      if (deleted === 1 || deleted % 10 === 0 || deleted === totalMessages) {
+        progressEmbed.setDescription(`${getProgressBar(deleted, totalMessages)}\n\`${deleted} / ${totalMessages}\` messages deleted`);
+        progressEmbed.setTimestamp(Date.now());
+        await progressMessage.edit({ embeds: [progressEmbed] }).catch(() => {});
+      }
     }
+
+    await new Promise(res => setTimeout(res, 1000)); // Rate limit safe
   }
 
-  // Prevent rate limits
-  await new Promise(res => setTimeout(res, 750));
-}
 
-// ✅ Post final confirmation
-const summaryEmbed = new EmbedBuilder()
-  .setColor(0x00FF00)
-  .setTitle('✅ Channel Cleared')
-  .setDescription(`Successfully deleted **${totalDeleted}** messages.`)
-  .setTimestamp();
+  // BLOCK 6 – Final Report & Auto Cleanup
+    const finalEmbed = new EmbedBuilder()
+    .setColor(0x00FF00)
+    .setTitle('✅ Nuke Complete')
+    .setDescription(`Deleted **${deleted}** messages.`)
+    .setTimestamp();
 
-const summaryMsg = await channel.send({ embeds: [summaryEmbed] });
+  const summary = await channel.send({ embeds: [finalEmbed] });
 
-// 🧹 Clean up messages safely after delay
-setTimeout(async () => {
-  try {
-    // Double-check message existence before deleting
-    const progMsg = await channel.messages.fetch(progressMessage.id).catch(() => null);
-    if (progMsg) await progMsg.delete().catch(() => {});
-
-    const sumMsg = await channel.messages.fetch(summaryMsg.id).catch(() => null);
-    if (sumMsg) await sumMsg.delete().catch(() => {});
-  } catch (err) {
-    console.warn('Message cleanup encountered an error:', err.message);
-  }
-}, 5000)};
+  // ⌛ Clean up bot messages after 6 seconds
+  setTimeout(async () => {
+    await progressMessage.delete().catch(() => {});
+    await summary.delete().catch(() => {});
+  }, 6000);
+};
